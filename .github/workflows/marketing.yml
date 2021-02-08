@@ -7,16 +7,17 @@ on:
     paths:
       - 'packages/marketing/**'
 
-defaults:
-  run:
-    working-directory: packages/marketing
-
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/marketing
     steps:
-      - uses: actions/checkout@v2
-      - uses: azure/login@v1
+      - name: Check out the code
+        uses: actions/checkout@v2
+      - name: Login to Azure
+        uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       - name: Install nodejs modules
@@ -29,12 +30,11 @@ jobs:
           azcliversion: 2.18.0
           inlineScript: |
             az storage blob upload-batch --account-name 'schultmfp' --destination '$web' --destination-path '/marketing' -s 'packages/marketing/dist'
-      - name: Purge pre-loaded content for the CDN endpoint
+      - name: Purge the pre-loaded content for the CDN endpoint
         uses: azure/CLI@v1
         with:
           azcliversion: 2.18.0
           inlineScript: |
             az cdn endpoint purge --content-paths '/marketing/remoteEntry.js' --profile-name 'schult-mfp' --name 'schultmfp' --resource-group 'work' --no-wait
-            az cdn endpoint purge --content-paths '/marketing/index.html' --profile-name 'schult-mfp' --name 'schultmfp' --resource-group 'work' --no-wait
-      - name: logout
+      - name: Logout from Azure
         run: az logout
