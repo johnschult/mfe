@@ -1,15 +1,15 @@
-name: deploy-container
+name: deploy-marketing
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'packages/container/**'
+      - 'packages/marketing/**'
 
 defaults:
   run:
-    working-directory: packages/container
+    working-directory: packages/marketing
 
 jobs:
   build:
@@ -28,12 +28,13 @@ jobs:
         with:
           azcliversion: 2.18.0
           inlineScript: |
-            az storage blob upload-batch --account-name 'schultmfp' --destination '$web' --destination-path '/' -s 'packages/container/dist'
+            az storage blob upload-batch --account-name 'schultmfp' --destination '$web' --destination-path '/marketing' -s 'packages/marketing/dist'
       - name: Purge pre-loaded content for the CDN endpoint
         uses: azure/CLI@v1
         with:
           azcliversion: 2.18.0
           inlineScript: |
-            az cdn endpoint purge --content-paths '/index.html' --profile-name 'schult-mfp' --name 'schultmfp' --resource-group 'work' --no-wait
+            az cdn endpoint purge --content-paths '/marketing/remoteEntry.js' --profile-name 'schult-mfp' --name 'schultmfp' --resource-group 'work' --no-wait
+            az cdn endpoint purge --content-paths '/marketing/index.html' --profile-name 'schult-mfp' --name 'schultmfp' --resource-group 'work' --no-wait
       - name: logout
         run: az logout
